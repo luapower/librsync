@@ -26,13 +26,11 @@
 
 
 #include "config.h"
-
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
-#include "util.h"
 #include "librsync.h"
+#include "util.h"
 #include "trace.h"
 
 void
@@ -66,4 +64,16 @@ rs_alloc(size_t size, char const *name)
     }
 
     return p;
+}
+
+
+void *
+rs_realloc(void *ptr, size_t size, char const *name)
+{
+    void *p;
+
+    if (!(p = realloc(ptr, size))) {
+	rs_fatal("couldn't reallocate instance of %s", name);
+     }
+     return p;
 }

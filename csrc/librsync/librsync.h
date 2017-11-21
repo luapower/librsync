@@ -37,7 +37,9 @@
 #define _RSYNC_H
 
 #include <sys/types.h>
-#include "librsync-config.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <time.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,8 +54,8 @@ extern char const rs_librsync_version[];
  */
 extern char const rs_licence_string[];
 
-typedef unsigned char rs_byte_t;
-
+typedef uint8_t rs_byte_t;
+typedef intmax_t rs_long_t;
 
 
                           /*
@@ -170,6 +172,20 @@ int             rs_supports_trace(void);
 void     rs_hexify(char *to_buf, void const *from_buf, int from_len);
 
 /**
+ * Decode a base64 buffer in place.
+ *
+ * \returns The number of binary bytes.
+ */
+size_t rs_unbase64(char *s);
+
+
+/**
+ * Encode a buffer as base64.
+ */
+void rs_base64(unsigned char const *buf, int n, char *out);
+
+
+/**
  * \enum rs_result
  * \brief Return codes from nonblocking rsync operations.
  * \see rs_strerror()
@@ -237,6 +253,8 @@ typedef struct rs_stats {
 
     rs_long_t       in_bytes;   /**< Total bytes read from input. */
     rs_long_t       out_bytes;  /**< Total bytes written to output. */
+
+    time_t          start, end;
 } rs_stats_t;
 
 
@@ -253,7 +271,7 @@ extern const int RS_MD4_SUM_LENGTH, RS_BLAKE2_SUM_LENGTH;
 
 #define RS_MAX_STRONG_SUM_LENGTH 32
 
-typedef unsigned int rs_weak_sum_t;
+typedef uint32_t rs_weak_sum_t;
 typedef unsigned char rs_strong_sum_t[RS_MAX_STRONG_SUM_LENGTH];
 
 void            rs_mdfour(unsigned char *out, void const *in, size_t);
@@ -505,7 +523,8 @@ rs_result rs_build_hash_table(rs_signature_t* sums);
  * \param pos Position where copying should begin.
  *
  * \param len On input, the amount of data that should be retrieved.
- * Updated to show how much is actually available.
+ * Updated to show how much is actually available, but should not be greater
+ * than the input value.
  *
  * \param buf On input, a buffer of at least \p *len bytes.  May be
  * updated to point to a buffer allocated by the callback if it
@@ -548,8 +567,10 @@ rs_job_t *rs_patch_begin(rs_copy_cb *copy_cb, void *copy_arg);
 /**
  * Buffer sizes for file IO.
  *
- * You probably only need to change these in testing.
- */
+ * The default 0 means use the recommended buffer size for the
+ * operation being performed, any other value will override the
+ * recommended sizes. You probably only need to change these in
+ * testing. */
 extern int rs_inbuflen, rs_outbuflen;
 
 

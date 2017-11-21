@@ -2,7 +2,7 @@
 --librsync 2 binding.
 --Written by Cosmin Apreutesei. Public Domain.
 
-if not ... then require'librsync_test' end
+if not ... then require'librsync_test'; return end
 
 local ffi = require'ffi'
 local C = ffi.load'rsync'

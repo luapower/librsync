@@ -115,9 +115,8 @@ end
 sigf:close()
 log_mbs(read_len, 'loaded sigs')
 
-mbs()
 rsync.build_hash_table(sig)
-log_mbs(read_len, 'loaded sigs (built hash tables)')
+log_mbs(read_len, 'loaded sigs + built hash tables')
 
 
 --local file3 = file1:gsub('(%.[^%.]+)$', '.out%1')
