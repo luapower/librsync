@@ -1,7 +1,7 @@
 
 local ffi = require'ffi'
 local rsync = require'librsync'
-local stdio = require'stdio'
+local fs = require'fs'
 local time = require'time'
 local lfs = require'lfs'
 
@@ -50,7 +50,7 @@ local function fill_buffer(f, init)
 	elseif b.avail_in ~= 0 then
 		return
 	end
-	b.avail_in = assert(stdio.read(f, mem, mem_len))
+	b.avail_in = assert(f:read(mem, mem_len))
 	b.next_in = mem
 	b.eof_in = b.avail_in < mem_len
 	read_len = read_len + tonumber(b.avail_in)
@@ -66,15 +66,15 @@ local function write_buffer(f)
 	end
 	local len = out_len - tonumber(b.avail_out)
 	if len == 0 then return end
-	assert(stdio.write(f, out, len))
+	assert(f:write(out, len))
 	b.next_out = out
 	b.avail_out = out_len
 	write_len = write_len + len
 end
 
 mbs()
-local f1 = io.open(file1, 'rb')
-local sigf = io.open(sigfile, 'wb')
+local f1 = fs.open(file1, 'r')
+local sigf = fs.open(sigfile, 'w')
 local job = rsync.create_sig_job(block_len)
 fill_buffer(f1, true)
 write_buffer()
@@ -88,7 +88,7 @@ local block_count = math.floor(read_len / block_len)
 log_mbs(read_len, 'saved sigs: %d sigs', block_count)
 
 mbs()
-local sigf = io.open(sigfile, 'rb')
+local sigf = fs.open(sigfile, 'r')
 
 local job, sig
 if true then
@@ -120,4 +120,4 @@ log_mbs(read_len, 'loaded sigs + built hash tables')
 
 
 --local file3 = file1:gsub('(%.[^%.]+)$', '.out%1')
---local f3 = io.open(file3, 'wb')
+--local f3 = fs.open(file3, 'w')
